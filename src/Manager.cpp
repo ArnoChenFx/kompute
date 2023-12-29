@@ -188,12 +188,22 @@ Manager::createInstance()
         "VK_LAYER_LUNARG_standard_validation",
         "VK_LAYER_KHRONOS_validation",
     };
+    
     std::vector<std::string> envLayerNames;
-    const char* envLayerNamesVal = std::getenv("KOMPUTE_ENV_DEBUG_LAYERS");
-    if (envLayerNamesVal != nullptr && *envLayerNamesVal != '\0') {
+
+    size_t requiredSize;
+    getenv_s(&requiredSize, nullptr, 0, "KOMPUTE_ENV_DEBUG_LAYERS");
+    if (requiredSize != 0) {
+        std::vector<char> envLayerNamesVal;
+        envLayerNamesVal.resize(requiredSize);
+        getenv_s(&requiredSize,
+                 envLayerNamesVal.data(),
+                 envLayerNamesVal.size(),
+                 "KOMPUTE_ENV_DEBUG_LAYERS");
+
         KP_LOG_DEBUG("Kompute Manager adding environment layers: {}",
                      envLayerNamesVal);
-        std::istringstream iss(envLayerNamesVal);
+        std::istringstream iss(envLayerNamesVal.data());
         std::istream_iterator<std::string> beg(iss);
         std::istream_iterator<std::string> end;
         envLayerNames = std::vector<std::string>(beg, end);
