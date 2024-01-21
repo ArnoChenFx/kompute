@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 cmake_minimum_required(VERSION 3.20)
-project(kompute VERSION 0.8.1 LANGUAGES CXX)
+project(kompute VERSION 0.9.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -256,14 +256,6 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror")
 endif()
 
-if(KOMPUTE_OPT_CODE_COVERAGE)
-    if(NOT UNIX)
-        message(FATAL_ERROR "KOMPUTE_OPT_CODE_COVERAGE can only be enabled in unix based systems due to limitation on gcov.")
-    endif()
-
-    include(cmake/code_coverage.cmake)
-endif()
-
 # If glslang is cloned, then SPIRV/GlslangToSpv.h will be used instead of glslang/SPIRV/GlslangToSpv.h
 # As after installation, SPIRV/ header files will be found in glslang/SPIRV/ , more info in #193
 if(KOMPUTE_OPT_REPO_SUBMODULE_BUILD)
@@ -281,6 +273,14 @@ add_subdirectory(src)
 if(KOMPUTE_OPT_BUILD_TESTS)
     enable_testing()
     add_subdirectory(test)
+endif()
+
+if(KOMPUTE_OPT_CODE_COVERAGE)
+    if(NOT UNIX)
+        message(FATAL_ERROR "KOMPUTE_OPT_CODE_COVERAGE can only be enabled in unix based systems due to limitation on gcov.")
+    endif()
+
+    include(cmake/code_coverage.cmake)
 endif()
 
 if(KOMPUTE_OPT_BUILD_DOCS)
