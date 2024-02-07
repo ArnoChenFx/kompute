@@ -94,7 +94,7 @@ add_subdirectory(include)
 if(KOMPUTE_OPT_INSTALL)
     if (KOMPUTE_OPT_USE_BUILT_IN_FMT)
         # We can't export fmt::fmt because it's alias target, so we unwrap the alias and install it.
-        get_target_property(fmt_aliased_target fmt::fmt ALIASED_TARGET)
+        get_target_property(fmt_aliased_target fmt::fmt-header-only ALIASED_TARGET)
         install(TARGETS ${fmt_aliased_target}
             EXPORT komputeTargets
             #COMPONENT DO_NOT_INSTALL_THIS
