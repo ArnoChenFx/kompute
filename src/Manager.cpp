@@ -199,6 +199,7 @@ Manager::createInstance()
     
     std::vector<std::string> envLayerNames;
 
+#if defined(_WIN32) || defined(_WIN64)
     size_t requiredSize;
     getenv_s(&requiredSize, nullptr, 0, "KOMPUTE_ENV_DEBUG_LAYERS");
     if (requiredSize != 0) {
@@ -220,6 +221,21 @@ Manager::createInstance()
         }
         KP_LOG_DEBUG("Desired layers: {}", fmt::join(desiredLayerNames, ", "));
     }
+#else
+    const char* envLayerNamesVal = std::getenv("KOMPUTE_ENV_DEBUG_LAYERS");
+    if (envLayerNamesVal != nullptr && *envLayerNamesVal != '\0') {
+        KP_LOG_DEBUG("Kompute Manager adding environment layers: {}",
+                     envLayerNamesVal);
+        std::istringstream iss(envLayerNamesVal);
+        std::istream_iterator<std::string> beg(iss);
+        std::istream_iterator<std::string> end;
+        envLayerNames = std::vector<std::string>(beg, end);
+        for (const std::string& layerName : envLayerNames) {
+            desiredLayerNames.push_back(layerName.c_str());
+        }
+        KP_LOG_DEBUG("Desired layers: {}", fmt::join(desiredLayerNames, ", "));
+    }
+#endif
 
     // Identify the valid layer names based on the desiredLayerNames
     {
