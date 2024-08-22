@@ -5,6 +5,27 @@
 #include "kompute/Kompute.hpp"
 #include "kompute/logger/Logger.hpp"
 
+// Introducing custom struct that can be used for tensors
+struct TestStruct
+{
+    float x;
+    uint32_t y;
+    int32_t z;
+
+    // Creating an == operator overload for the comparison below
+    bool operator==(const TestStruct rhs) const
+    {
+        return this->x == rhs.x && this->y == rhs.y && this->z == rhs.z;
+    }
+};
+// Custom struct needs to be mapped the eCustom datatype
+template<>
+kp::Tensor::TensorDataTypes
+kp::TensorT<TestStruct>::dataType()
+{
+    return Tensor::TensorDataTypes::eCustom;
+}
+
 TEST(TestTensor, ConstructorData)
 {
     kp::Manager mgr;
@@ -13,6 +34,28 @@ TEST(TestTensor, ConstructorData)
     EXPECT_EQ(tensor->size(), vec.size());
     EXPECT_EQ(tensor->dataTypeMemorySize(), sizeof(float));
     EXPECT_EQ(tensor->vector(), vec);
+}
+
+TEST(TestTensor, ReserveData)
+{
+    kp::Manager mgr;
+    std::shared_ptr<kp::Tensor> tensor = mgr.tensor(
+      nullptr, 3, sizeof(float), kp::Tensor::TensorDataTypes::eFloat);
+    EXPECT_EQ(tensor->size(), 3);
+    EXPECT_EQ(tensor->dataTypeMemorySize(), sizeof(float));
+
+    std::shared_ptr<kp::Tensor> tensor2 =
+      mgr.tensor(3, sizeof(float), kp::Tensor::TensorDataTypes::eFloat);
+    EXPECT_EQ(tensor2->size(), 3);
+    EXPECT_EQ(tensor2->dataTypeMemorySize(), sizeof(float));
+
+    std::shared_ptr<kp::TensorT<float>> tensor3 = mgr.tensorT<float>(3);
+    EXPECT_EQ(tensor3->size(), 3);
+    EXPECT_EQ(tensor3->dataTypeMemorySize(), sizeof(float));
+
+    std::shared_ptr<kp::TensorT<TestStruct>> tensor4 = mgr.tensorT<TestStruct>(3);
+    EXPECT_EQ(tensor3->size(), 3);
+    EXPECT_EQ(tensor3->dataTypeMemorySize(), sizeof(TestStruct));
 }
 
 TEST(TestTensor, DataTypes)

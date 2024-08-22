@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-#include <set>
-#include <unordered_map>
-
 #include "kompute/Core.hpp"
-
 #include "kompute/Sequence.hpp"
 #include "logger/Logger.hpp"
 
@@ -95,6 +91,30 @@ class Manager
         return tensor;
     }
 
+    /**
+     * Create a managed tensor that will be destroyed by this manager
+     * if it hasn't been destroyed by its reference count going to zero.
+     *
+     * @param size The number of element in this tensor
+     * @param tensorType The type of tensor to initialize
+     * @returns Shared pointer with initialised tensor
+     */
+    template<typename T>
+    std::shared_ptr<TensorT<T>> tensorT(
+      size_t size,
+      Tensor::TensorTypes tensorType = Tensor::TensorTypes::eDevice)
+    {
+        KP_LOG_DEBUG("Kompute Manager tensor creation triggered");
+
+        std::shared_ptr<TensorT<T>> tensor{ new kp::TensorT<T>(
+          this->mPhysicalDevice, this->mDevice, size, tensorType) };
+
+        if (this->mManageResources) {
+            this->mManagedTensors.push_back(tensor);
+        }
+
+        return tensor;
+    }
     std::shared_ptr<TensorT<float>> tensor(
       const std::vector<float>& data,
       Tensor::TensorTypes tensorType = Tensor::TensorTypes::eDevice)
@@ -112,6 +132,26 @@ class Manager
         std::shared_ptr<Tensor> tensor{ new kp::Tensor(this->mPhysicalDevice,
                                                        this->mDevice,
                                                        data,
+                                                       elementTotalCount,
+                                                       elementMemorySize,
+                                                       dataType,
+                                                       tensorType) };
+
+        if (this->mManageResources) {
+            this->mManagedTensors.push_back(tensor);
+        }
+
+        return tensor;
+    }
+
+      std::shared_ptr<Tensor> tensor(
+      uint32_t elementTotalCount,
+      uint32_t elementMemorySize,
+      const Tensor::TensorDataTypes& dataType,
+      Tensor::TensorTypes tensorType = Tensor::TensorTypes::eDevice)
+    {
+        std::shared_ptr<Tensor> tensor{ new kp::Tensor(this->mPhysicalDevice,
+                                                       this->mDevice,
                                                        elementTotalCount,
                                                        elementMemorySize,
                                                        dataType,

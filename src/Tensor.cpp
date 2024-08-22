@@ -58,6 +58,25 @@ Tensor::Tensor(std::shared_ptr<vk::PhysicalDevice> physicalDevice,
     this->rebuild(data, elementTotalCount, elementMemorySize);
 }
 
+Tensor::Tensor(std::shared_ptr<vk::PhysicalDevice> physicalDevice,
+               std::shared_ptr<vk::Device> device,
+               uint32_t elementTotalCount,
+               uint32_t elementMemorySize,
+               const TensorDataTypes& dataType,
+               const TensorTypes& tensorType)
+{
+    KP_LOG_DEBUG("Kompute Tensor constructor data length: {}, and type: {}",
+                 elementTotalCount,
+                 Tensor::toString(tensorType));
+
+    this->mPhysicalDevice = physicalDevice;
+    this->mDevice = device;
+    this->mDataType = dataType;
+    this->mTensorType = tensorType;
+
+    this->reserve(elementTotalCount, elementMemorySize);
+}
+
 Tensor::~Tensor()
 {
     KP_LOG_DEBUG("Kompute Tensor destructor started. Type: {}",
@@ -68,6 +87,23 @@ Tensor::~Tensor()
     }
 
     KP_LOG_DEBUG("Kompute Tensor destructor success");
+}
+
+void
+Tensor::reserve(uint32_t elementTotalCount, uint32_t elementMemorySize)
+{
+    KP_LOG_DEBUG("Reserving {} bytes for memory", elementTotalCount);
+
+    this->mSize = elementTotalCount;
+    this->mDataTypeMemorySize = elementMemorySize;
+
+    if (this->mPrimaryBuffer || this->mPrimaryMemory) {
+        KP_LOG_DEBUG(
+          "Kompute Tensor destroying existing resources before rebuild");
+        this->destroy();
+    }
+
+    this->allocateMemoryCreateGPUResources();
 }
 
 void
@@ -103,8 +139,7 @@ Tensor::tensorType()
 bool
 Tensor::isInit()
 {
-    return this->mDevice && this->mPrimaryBuffer && this->mPrimaryMemory &&
-           this->mRawData;
+    return this->mDevice && this->mPrimaryBuffer && this->mPrimaryMemory;
 }
 
 uint32_t
@@ -140,6 +175,9 @@ Tensor::rawData()
 void
 Tensor::setRawData(const void* data)
 {
+    if (!this->mRawData) {
+        this->mapRawData();
+    }
     memcpy(this->mRawData, data, this->memorySize());
 }
 
@@ -156,8 +194,8 @@ Tensor::mapRawData()
     } else if (this->mTensorType == TensorTypes::eDevice) {
         hostVisibleMemory = this->mStagingMemory;
     } else {
-        KP_LOG_WARN(
-          "Kompute Tensor mapping data not supported on {} tensor", toString(this->tensorType()));
+        KP_LOG_WARN("Kompute Tensor mapping data not supported on {} tensor",
+                    toString(this->tensorType()));
         return;
     }
 
@@ -167,7 +205,6 @@ Tensor::mapRawData()
     // flush
     this->mRawData = this->mDevice->mapMemory(
       *hostVisibleMemory, 0, bufferSize, vk::MemoryMapFlags());
-
 }
 
 void
@@ -183,8 +220,8 @@ Tensor::unmapRawData()
     } else if (this->mTensorType == TensorTypes::eDevice) {
         hostVisibleMemory = this->mStagingMemory;
     } else {
-        KP_LOG_WARN(
-          "Kompute Tensor mapping data not supported on {} tensor", toString(this->tensorType()));
+        KP_LOG_WARN("Kompute Tensor mapping data not supported on {} tensor",
+                    toString(this->tensorType()));
         return;
     }
 
