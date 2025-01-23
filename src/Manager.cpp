@@ -300,8 +300,11 @@ Manager::createInstance()
           vk::DebugReportFlagBitsEXT::eError |
           vk::DebugReportFlagBitsEXT::eWarning;
         vk::DebugReportCallbackCreateInfoEXT debugCreateInfo = {};
-        debugCreateInfo.pfnCallback =
-          (vk::PFN_DebugReportCallbackEXT)debugMessageCallback;
+#if VK_HEADER_VERSION < 303
+        debugCreateInfo.pfnCallback = (PFN_vkDebugReportCallbackEXT)debugMessageCallback;
+#else
+        debugCreateInfo.pfnCallback = (vk::PFN_DebugReportCallbackEXT)debugMessageCallback;
+#endif
         debugCreateInfo.flags = debugFlags;
 
         this->mDebugDispatcher.init(*this->mInstance, &vkGetInstanceProcAddr);
