@@ -540,7 +540,11 @@ class Manager
 
 #ifndef KOMPUTE_DISABLE_VK_DEBUG_LAYERS
     vk::DebugReportCallbackEXT mDebugReportCallback;
+#if VK_HEADER_VERSION < 303
+    vk::DispatchLoaderDynamic mDebugDispatcher;
+#else
     vk::detail::DispatchLoaderDynamic mDebugDispatcher;
+#endif
 #endif
 
     // Create functions
