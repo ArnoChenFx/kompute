@@ -39,7 +39,16 @@ class OpMemoryBarrier : public OpBase
                     const vk::AccessFlagBits& dstAccessMask,
                     const vk::PipelineStageFlagBits& srcStageMask,
                     const vk::PipelineStageFlagBits& dstStageMask,
-                    bool barrierOnPrimary = true);
+                    bool barrierOnPrimary = true) noexcept;
+
+    /**
+     * @brief Make OpMemoryBarrier non-copyable
+     *
+     */
+    OpMemoryBarrier(const OpMemoryBarrier&) = delete;
+    OpMemoryBarrier(const OpMemoryBarrier&&) = delete;
+    OpMemoryBarrier& operator=(const OpMemoryBarrier&) = delete;
+    OpMemoryBarrier& operator=(const OpMemoryBarrier&&) = delete;
 
     /**
      * Default destructor, which is in charge of destroying the reference to the

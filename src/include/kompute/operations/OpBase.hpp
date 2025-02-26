@@ -19,12 +19,27 @@ namespace kp {
 class OpBase
 {
   public:
+      /**
+     * @brief Construct a new OpBase object
+     *
+     */
+    OpBase() = default;
+
+    /**
+     * @brief Make OpBase non-copyable
+     *
+     */
+    OpBase(const OpBase&) = delete;
+    OpBase(const OpBase&&) = delete;
+    OpBase& operator=(const OpBase&) = delete;
+    OpBase& operator=(const OpBase&&) = delete;
+
     /**
      * Default destructor for OpBase class. This OpBase destructor class should
      * always be called to destroy and free owned resources unless it is
      * intended to destroy the resources in the parent class.
      */
-    virtual ~OpBase() { KP_LOG_DEBUG("Kompute OpBase destructor started"); }
+    virtual ~OpBase() noexcept { KP_LOG_DEBUG("Kompute OpBase destructor started"); }
 
     /**
      * The record function is intended to only send a record command or run

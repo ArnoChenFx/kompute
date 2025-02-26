@@ -31,10 +31,19 @@ class OpSyncLocal : public OpBase
     OpSyncLocal(const std::vector<std::shared_ptr<Memory>>& memObjects);
 
     /**
+     * @brief Make OpSyncLocal non-copyable
+     *
+     */
+    OpSyncLocal(const OpSyncLocal&) = delete;
+    OpSyncLocal(const OpSyncLocal&&) = delete;
+    OpSyncLocal& operator=(const OpSyncLocal&) = delete;
+    OpSyncLocal& operator=(const OpSyncLocal&&) = delete;
+
+    /**
      * Default destructor. This class does not manage memory so it won't be
      * expecting the parent to perform a release.
      */
-    ~OpSyncLocal() override;
+    ~OpSyncLocal() noexcept override;
 
     /**
      * For device memory objects, it records the copy command for the tensor to
